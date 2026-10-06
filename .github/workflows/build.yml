@@ -1,0 +1,77 @@
+name: Build executables
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            asset: AFTAnalyzer-windows.zip
+          - os: macos-latest           # Apple Silicon
+            asset: AFTAnalyzer-macos-arm64.zip
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r packaging/requirements-build.txt
+          pip install pytest
+
+      - name: Test analysis core
+        run: python -m pytest -q tests
+
+      - name: Build with PyInstaller
+        run: pyinstaller packaging/AFTAnalyzer.spec --noconfirm
+
+      - name: Smoke test & zip (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # 1) frozen analysis + CZI/TIFF libraries load and compute
+          $t = Start-Process -FilePath dist\AFTAnalyzer\AFTAnalyzer.exe -ArgumentList "--selftest" -Wait -PassThru
+          if ($t.ExitCode -ne 0) { Write-Error "selftest failed ($($t.ExitCode))"; exit 1 }
+          # 2) GUI reaches the Qt event loop
+          $p = Start-Process -FilePath dist\AFTAnalyzer\AFTAnalyzer.exe -PassThru
+          Start-Sleep -Seconds 25
+          if ($p.HasExited) { Write-Error "App exited with code $($p.ExitCode)"; exit 1 }
+          Stop-Process -Id $p.Id -Force
+          Compress-Archive -Path dist\AFTAnalyzer -DestinationPath ${{ matrix.asset }}
+
+      - name: Smoke test & zip (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          BIN=dist/AFTAnalyzer.app/Contents/MacOS/AFTAnalyzer
+          $BIN --selftest
+          QT_QPA_PLATFORM=offscreen $BIN &
+          PID=$!; sleep 25
+          kill -0 $PID || { echo "App exited early"; exit 1 }
+          kill $PID
+          ditto -c -k --keepParent dist/AFTAnalyzer.app ${{ matrix.asset }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.asset }}
+          retention-days: 30
+
+      - name: Attach to GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.asset }}
