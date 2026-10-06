@@ -60,7 +60,7 @@ jobs:
           $BIN --selftest
           QT_QPA_PLATFORM=offscreen $BIN &
           PID=$!; sleep 25
-          kill -0 $PID || { echo "App exited early"; exit 1 }
+          kill -0 $PID || { echo "App exited early"; exit 1; }
           kill $PID
           ditto -c -k --keepParent dist/AFTAnalyzer.app ${{ matrix.asset }}
 
