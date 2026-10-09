@@ -24,6 +24,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=7"]
+web = ["streamlit>=1.40", "plotly>=5.18"]
 
 [project.gui-scripts]
 aft-gui = "aft_gui.__main__:main"
