@@ -1,12 +1,17 @@
 """Streamlit front end for AFT: compute runs where the app runs (e.g. a cluster),
 the interface is a browser.   streamlit run aft_web/app.py
-Images are read from paths on the server, so nothing is uploaded.
+Images are read from paths on the server, or dragged in from the user's computer;
+uploads are temporary (auto-deleted, see UPLOAD_* settings below).
 """
 from __future__ import annotations
 
+import getpass
 import io
 import os
+import shutil
+import tempfile
 import time
+import uuid
 import zipfile
 from concurrent.futures import ProcessPoolExecutor
 
@@ -22,6 +27,48 @@ from scipy.stats import kruskal, mannwhitneyu, ttest_ind
 from aft_gui import core, imageio
 
 st.set_page_config(page_title="AFT Alignment Analyzer", layout="wide")
+
+# ------------------------------------------------- temporary upload storage
+# Uploads live in node-local temp space (not the shared home) and are removed by:
+#   * the "Clear list" / "delete after analysis" options,
+#   * an inactivity TTL (swept on every page run, by any session),
+#   * a per-session size quota.
+UPLOAD_ROOT = os.environ.get("AFT_UPLOAD_DIR",
+                             os.path.join(tempfile.gettempdir(), f"aft_uploads_{getpass.getuser()}"))
+TTL_HOURS = float(os.environ.get("AFT_UPLOAD_TTL_HOURS", "3"))
+QUOTA_GB = float(os.environ.get("AFT_UPLOAD_QUOTA_GB", "10"))
+
+
+def _dir_bytes(path):
+    return sum(os.path.getsize(os.path.join(r, f)) for r, _, fs in os.walk(path) for f in fs)
+
+
+def sweep_uploads():
+    """Delete session folders untouched for longer than TTL_HOURS."""
+    if not os.path.isdir(UPLOAD_ROOT):
+        return
+    now = time.time()
+    for name in os.listdir(UPLOAD_ROOT):
+        d = os.path.join(UPLOAD_ROOT, name)
+        try:
+            if os.path.isdir(d) and now - os.path.getmtime(d) > TTL_HOURS * 3600:
+                shutil.rmtree(d, ignore_errors=True)
+        except OSError:
+            pass
+
+
+def session_dir():
+    return os.path.join(UPLOAD_ROOT, ss["upload_id"]) if ss.get("upload_id") else None
+
+
+def delete_uploads():
+    """Remove this session's uploaded files and their rows from the table."""
+    d = session_dir()
+    if d:
+        shutil.rmtree(d, ignore_errors=True)
+    t = ss["table"]
+    ss["table"] = t[~t["path"].str.startswith(UPLOAD_ROOT + os.sep)].reset_index(drop=True)
+    ss.pop("upload_id", None)
 
 
 # ---------------------------------------------------------------- compute
@@ -72,6 +119,13 @@ def stats_text(groups):
 ss = st.session_state
 ss.setdefault("table", pd.DataFrame(columns=["include", "path", "condition", "replicate"]))
 ss.setdefault("results", None)
+ss.setdefault("up_key", 0)
+sweep_uploads()
+_sd = session_dir()
+if _sd and os.path.isdir(_sd):
+    os.utime(_sd)                      # keep an active session's files alive
+elif len(ss["table"]):                 # files vanished (TTL / manual): drop dead rows
+    ss["table"] = ss["table"][ss["table"]["path"].map(os.path.exists)].reset_index(drop=True)
 
 with st.sidebar:
     st.title("AFT Analyzer")
@@ -92,28 +146,69 @@ tab_img, tab_tune, tab_res = st.tabs(["1 · Images", "2 · Tune parameters", "3 
 
 # ---------------------------------------------------------------- tab 1
 with tab_img:
-    st.markdown("Folder **on the server** (e.g. on `/CEPH/...`). Subfolders are searched; "
-                "the default condition is the image's folder name.")
-    c1, c2 = st.columns([4, 1])
-    folder = c1.text_input("Folder path", value=ss.get("folder", ""), placeholder="/CEPH/.../images")
-    channel = c2.number_input("Channel (0-based)", 0, 20, ss.get("channel", 0))
+    mode = st.radio("Where are the images?", ["On the server (path)", "On my computer (upload)"],
+                    horizontal=True)
+    channel = st.number_input("Channel (0-based)", 0, 20, ss.get("channel", 0))
     ss["channel"] = int(channel)
-    if st.button("Scan folder", type="primary"):
-        if not os.path.isdir(folder):
-            st.error("Not a directory on the server.")
-        else:
-            ss["folder"] = folder
-            files = imageio.find_images(folder)
-            ss["table"] = pd.DataFrame(dict(
-                include=True, path=files,
-                condition=[os.path.basename(os.path.dirname(f)) for f in files],
-                replicate=""))
-            ss["results"] = None
+
+    if mode.startswith("On the server"):
+        st.markdown("Folder **on the server** (e.g. on `/CEPH/...`). Subfolders are searched; "
+                    "the default condition is the image's folder name.")
+        folder = st.text_input("Folder path", value=ss.get("folder", ""), placeholder="/CEPH/.../images")
+        if st.button("Scan folder", type="primary"):
+            if not os.path.isdir(folder):
+                st.error("Not a directory on the server.")
+            else:
+                ss["folder"] = folder
+                files = imageio.find_images(folder)
+                ss["table"] = pd.DataFrame(dict(
+                    include=True, path=files,
+                    condition=[os.path.basename(os.path.dirname(f)) for f in files],
+                    replicate=""))
+                ss["results"] = None
+    else:
+        st.markdown("Drag `.czi` / `.tif` files from your computer into the box. They are kept on the "
+                    f"server only temporarily: removed after **{TTL_HOURS:g} h** without activity, "
+                    "when you press *Clear list*, or right after analysis if you tick the option in tab 3.")
+        cond = st.text_input("Condition for this batch", value="", placeholder="e.g. control")
+        ups = st.file_uploader("Images (drag & drop)", type=["czi", "tif", "tiff"],
+                               accept_multiple_files=True, key=f"uploader{ss['up_key']}")
+        if st.button("Add uploaded files", type="primary", disabled=not ups):
+            ss.setdefault("upload_id", f"{time.strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:6]}")
+            root = session_dir()
+            used = _dir_bytes(root) if os.path.isdir(root) else 0
+            if used + sum(u.size for u in ups) > QUOTA_GB * 1e9:
+                st.error(f"Over the {QUOTA_GB:g} GB per-session quota "
+                         f"({used / 1e9:.1f} GB already stored). Clear the list or upload fewer files.")
+            else:
+                dest = os.path.join(root, cond or "uploaded")
+                os.makedirs(dest, exist_ok=True)
+                new = []
+                for u in ups:
+                    fp = os.path.join(dest, os.path.basename(u.name))
+                    with open(fp, "wb") as fh:
+                        fh.write(u.getbuffer())
+                    new.append(fp)
+                add = pd.DataFrame(dict(include=True, path=new, condition=cond or "uploaded", replicate=""))
+                ss["table"] = pd.concat([ss["table"], add]).drop_duplicates("path", ignore_index=True)
+                ss["folder"] = root
+                ss["results"] = None
+                ss["up_key"] += 1      # resets the uploader: frees the copies held in RAM
+                st.rerun()
+        if session_dir() and os.path.isdir(session_dir()):
+            st.caption(f"On the server now: {_dir_bytes(session_dir()) / 1e9:.2f} GB "
+                       f"(quota {QUOTA_GB:g} GB)")
+
     if len(ss["table"]):
         st.caption("Edit the condition / replicate cells; untick to exclude an image.")
         ss["table"] = st.data_editor(ss["table"], width="stretch", hide_index=True,
                                      disabled=["path"], key="editor")
         st.write(f"{int(ss['table']['include'].sum())} of {len(ss['table'])} images included")
+        if st.button("Clear list (also deletes uploaded files)"):
+            delete_uploads()
+            ss["table"] = ss["table"].iloc[0:0]
+            ss["results"] = None
+            st.rerun()
 
 # ---------------------------------------------------------------- tab 2
 with tab_tune:
@@ -160,6 +255,9 @@ with tab_res:
         st.info("Scan a folder in tab 1 first.")
     else:
         sel = t[t["include"]]
+        has_up = bool(session_dir()) and t["path"].str.startswith(UPLOAD_ROOT + os.sep).any()
+        del_after = st.checkbox("Delete uploaded files from the server after analysis "
+                                "(re-analysing then needs a new upload)", value=False, disabled=not has_up)
         if st.button(f"Analyze {len(sel)} images with current parameters", type="primary"):
             jobs = [(p_, ss["channel"], params.to_dict()) for p_ in sel["path"]]
             bar, rows, wins, t0 = st.progress(0.0), {}, [], time.time()
@@ -177,6 +275,9 @@ with tab_res:
                 df[k] = v
             ss["results"] = dict(df=df.drop(columns="include"), windows=pd.concat(wins),
                                  params=params.to_dict())
+            if del_after:
+                delete_uploads()
+                st.toast("Uploaded files deleted from the server.")
         res = ss["results"]
         if res is not None:
             df = res["df"]
