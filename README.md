@@ -1,5 +1,10 @@
 # AFT Alignment Analyzer
 
+[![Tests](https://github.com/joacosmucler/AFT-Alignment-Analyzer/actions/workflows/tests.yml/badge.svg)](https://github.com/joacosmucler/AFT-Alignment-Analyzer/actions/workflows/tests.yml)
+[![Release](https://img.shields.io/github/v/release/joacosmucler/AFT-Alignment-Analyzer)](https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey)
+
 Desktop app for measuring cytoskeletal alignment with **AFT (Alignment by
 Fourier Transform)**
 ([OakesLab](https://github.com/OakesLab/AFT-Alignment_by_Fourier_Transform);
@@ -11,7 +16,15 @@ parameters live or with a parameter sweep. The app gives you the order
 parameter for each condition with statistics, plus the alignment map inside
 each image.
 
-![icon](aft_gui/icon.png)
+**Why a GUI?** The original AFT is a set of Python functions and notebooks.
+This app wraps a validated, vectorized version of it (numerically identical to
+the original, see [tests](tests/test_core.py)) in a point-and-click workflow:
+no code, live parameter tuning, a guided parameter sweep that warns about
+unreliable and circular choices, and publication-ready plots and statistics.
+
+<!-- Demo video / GIF goes here, e.g.:
+![Demo](docs/demo.gif)
+-->
 
 ---
 
@@ -22,7 +35,7 @@ each image.
 | Windows 10/11 (64-bit) | `AFTAnalyzer-windows.zip` | Unzip it and run `AFTAnalyzer\AFTAnalyzer.exe`. The first time, SmartScreen will warn you: click **More info → Run anyway**. |
 | macOS (Apple Silicon) | `AFTAnalyzer-macos-arm64.zip` | Unzip it and move `AFTAnalyzer.app` to *Applications*. The first time, **right-click → Open → Open**, because the app is unsigned. |
 
-You can get both files from the repository's **Releases** page, or from
+You can get both files from the [**Releases**](https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest) page, or from
 **Actions → Build executables → (latest run) → Artifacts**. To build them
 yourself, see [Building the executables](#building-the-executables).
 
@@ -118,7 +131,7 @@ aft_gui/
   tab_results.py   4 · batch analysis, plot, stats, export
 packaging/         PyInstaller spec, build requirements, icons
 tests/             equivalence tests against the original AFT_tools (tests/reference)
-.github/workflows/ CI build for Windows + macOS
+.github/workflows/ tests on every push; Windows + macOS builds on tags
 ```
 
 ## Implementation notes
