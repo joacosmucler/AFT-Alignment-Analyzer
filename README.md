@@ -51,7 +51,7 @@ unreliable and circular choices, and publication-ready plots and statistics.
 
 ### macOS (Apple Silicon: M1, M2, M3, M4…)
 
-Not sure which chip you have? Open  → **About This Mac**. If it says
+Not sure which chip you have? Click the Apple menu (top-left corner) → **About This Mac**. If it says
 *Chip: Apple M…*, this build is for you. Intel Macs are not supported yet;
 use [Install from source](#install-from-source) instead.
 
