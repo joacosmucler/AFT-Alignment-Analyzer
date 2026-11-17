@@ -8,9 +8,9 @@
 ![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey)
 
 <p align="center">
-  <a href="https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest/download/AFTAnalyzer-windows.zip"><img src="https://img.shields.io/badge/Download-Windows%20(155%20MB)-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows"></a>
+  <a href="https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest/download/AFTAnalyzer-windows.zip"><img src="https://img.shields.io/badge/Download-Windows%20(153%20MB)-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows"></a>
   &nbsp;
-  <a href="https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest/download/AFTAnalyzer-macos-arm64.zip"><img src="https://img.shields.io/badge/Download-macOS%20Apple%20Silicon%20(120%20MB)-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for macOS (Apple Silicon)"></a>
+  <a href="https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest/download/AFTAnalyzer-macos-arm64.zip"><img src="https://img.shields.io/badge/Download-macOS%20Apple%20Silicon%20(118%20MB)-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for macOS (Apple Silicon)"></a>
 </p>
 <p align="center"><sub>No Python needed. First time opening it? See <a href="#download-no-python-needed">how to run</a>.</sub></p>
 
@@ -50,7 +50,7 @@ unreliable and circular choices, and publication-ready plots and statistics.
 
 ### Windows 10/11 (64-bit)
 
-1. Download **[AFTAnalyzer-windows.zip](https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest/download/AFTAnalyzer-windows.zip)** (155 MB).
+1. Download **[AFTAnalyzer-windows.zip](https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest/download/AFTAnalyzer-windows.zip)** (153 MB).
 2. Right-click the zip → **Extract All…** Don't run the app from inside the
    zip: it won't start.
 3. Open the extracted `AFTAnalyzer` folder and double-click **`AFTAnalyzer.exe`**.
@@ -64,7 +64,7 @@ Not sure which chip you have? Click the Apple menu (top-left corner) → **About
 *Chip: Apple M…*, this build is for you. Intel Macs are not supported yet;
 use [Install from source](#install-from-source) instead.
 
-1. Download **[AFTAnalyzer-macos-arm64.zip](https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest/download/AFTAnalyzer-macos-arm64.zip)** (120 MB).
+1. Download **[AFTAnalyzer-macos-arm64.zip](https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest/download/AFTAnalyzer-macos-arm64.zip)** (118 MB).
 2. Double-click the zip to unzip it, then drag **`AFTAnalyzer.app`** into
    *Applications*.
 3. Double-click the app. The first time, macOS blocks it because it is not
