@@ -1,3 +1,5 @@
+<p align="center"><img src="aft_gui/icon.png" alt="AFT Alignment Analyzer icon" width="160"></p>
+
 # AFT Alignment Analyzer
 
 [![Tests](https://github.com/joacosmucler/AFT-Alignment-Analyzer/actions/workflows/tests.yml/badge.svg)](https://github.com/joacosmucler/AFT-Alignment-Analyzer/actions/workflows/tests.yml)
