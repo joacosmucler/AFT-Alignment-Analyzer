@@ -7,6 +7,13 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey)
 
+<p align="center">
+  <a href="https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest/download/AFTAnalyzer-windows.zip"><img src="https://img.shields.io/badge/Download-Windows%20(155%20MB)-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows"></a>
+  &nbsp;
+  <a href="https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest/download/AFTAnalyzer-macos-arm64.zip"><img src="https://img.shields.io/badge/Download-macOS%20Apple%20Silicon%20(120%20MB)-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for macOS (Apple Silicon)"></a>
+</p>
+<p align="center"><sub>No Python needed. First time opening it? See <a href="#download-no-python-needed">how to run</a>.</sub></p>
+
 Desktop app for measuring cytoskeletal alignment with **AFT (Alignment by
 Fourier Transform)**
 ([OakesLab](https://github.com/OakesLab/AFT-Alignment_by_Fourier_Transform);
@@ -32,14 +39,34 @@ unreliable and circular choices, and publication-ready plots and statistics.
 
 ## Download (no Python needed)
 
-| Platform | File | How to run |
-|---|---|---|
-| Windows 10/11 (64-bit) | `AFTAnalyzer-windows.zip` | Unzip it and run `AFTAnalyzer\AFTAnalyzer.exe`. The first time, SmartScreen will warn you: click **More info → Run anyway**. |
-| macOS (Apple Silicon) | `AFTAnalyzer-macos-arm64.zip` | Unzip it and move `AFTAnalyzer.app` to *Applications*. The first time, **right-click → Open → Open**, because the app is unsigned. |
+### Windows 10/11 (64-bit)
 
-You can get both files from the [**Releases**](https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest) page, or from
-**Actions → Build executables → (latest run) → Artifacts**. To build them
-yourself, see [Building the executables](#building-the-executables).
+1. Download **[AFTAnalyzer-windows.zip](https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest/download/AFTAnalyzer-windows.zip)** (155 MB).
+2. Right-click the zip → **Extract All…** Don't run the app from inside the
+   zip: it won't start.
+3. Open the extracted `AFTAnalyzer` folder and double-click **`AFTAnalyzer.exe`**.
+4. The first time, Windows SmartScreen may say it protected your PC. Click
+   **More info → Run anyway**. The app is not code-signed, so this is
+   expected.
+
+### macOS (Apple Silicon: M1, M2, M3, M4…)
+
+Not sure which chip you have? Open  → **About This Mac**. If it says
+*Chip: Apple M…*, this build is for you. Intel Macs are not supported yet;
+use [Install from source](#install-from-source) instead.
+
+1. Download **[AFTAnalyzer-macos-arm64.zip](https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest/download/AFTAnalyzer-macos-arm64.zip)** (120 MB).
+2. Double-click the zip to unzip it, then drag **`AFTAnalyzer.app`** into
+   *Applications*.
+3. Double-click the app. The first time, macOS blocks it because it is not
+   signed by an identified developer. Click **Done** (not *Move to Trash*).
+4. Open **System Settings → Privacy & Security**, scroll down to the message
+   about *AFTAnalyzer*, and click **Open Anyway**. Confirm with your password.
+   You only have to do this once.
+
+All versions are on the [Releases](https://github.com/joacosmucler/AFT-Alignment-Analyzer/releases/latest)
+page. To build the app yourself, see
+[Building the executables](#building-the-executables).
 
 ## Install from source
 
