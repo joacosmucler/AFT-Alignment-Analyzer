@@ -75,6 +75,10 @@ class SweepTab(QWidget):
         self.ws_min = QSpinBox(); self.ws_min.setRange(9, 999); self.ws_min.setValue(25)
         self.ws_max = QSpinBox(); self.ws_max.setRange(0, 2000); self.ws_max.setValue(0)
         self.ws_max.setSpecialValueText("auto (⅓ image)")
+        # QFormLayout keeps fields at their size hint on macOS, which ignores the
+        # special-value text, so reserve room for it explicitly.
+        self.ws_max.setMinimumWidth(
+            self.ws_max.fontMetrics().horizontalAdvance("auto (⅓ image)") + 40)
         self.ws_step = QSpinBox(); self.ws_step.setRange(2, 200); self.ws_step.setValue(10)
         self.n_max = QSpinBox(); self.n_max.setRange(0, 200); self.n_max.setValue(15)
         self.n_max.setSpecialValueText("all")
