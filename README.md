@@ -31,9 +31,18 @@ the original, see [tests](tests/test_core.py)) in a point-and-click workflow:
 no code, live parameter tuning, a guided parameter sweep that warns about
 unreliable and circular choices, and publication-ready plots and statistics.
 
-<!-- Demo video / GIF goes here, e.g.:
-![Demo](docs/demo.gif)
--->
+<p align="center"><img src="docs/demo.gif" alt="Demo: load images, tune parameters, run the analysis" width="900"></p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/1-images.png" alt="Images tab"><br><sub><b>1 · Images:</b> load CZI/TIFF, assign conditions</sub></td>
+    <td width="50%"><img src="docs/2-tune.png" alt="Tune tab"><br><sub><b>2 · Tune:</b> live orientation vectors and maps</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/3-sweep.png" alt="Parameter sweep tab"><br><sub><b>3 · Sweep:</b> difference between conditions for every parameter pair</sub></td>
+    <td><img src="docs/4-results.png" alt="Results tab"><br><sub><b>4 · Results:</b> order parameter per condition with statistics</sub></td>
+  </tr>
+</table>
 
 ---
 
@@ -158,6 +167,7 @@ aft_gui/
   tab_tune.py      2 · interactive tuning
   tab_sweep.py     3 · parameter sweep
   tab_results.py   4 · batch analysis, plot, stats, export
+docs/              demo GIF and screenshots
 packaging/         PyInstaller spec, build requirements, icons
 tests/             equivalence tests against the original AFT_tools (tests/reference)
 .github/workflows/ tests on every push; Windows + macOS builds on tags
